@@ -150,3 +150,40 @@
     border: 1px solid var(--color-element);
     text-align: left;
 }
+
+
+.codeBlock {
+    position: relative;
+}
+
+.copyButton {
+    position: absolute;
+
+    top: 8px;
+    right: 8px;
+
+    padding: 6px 10px;
+
+    border: none;
+    border-radius: 8px;
+
+    background-color: var(--color-element);
+    color: var(--color-text);
+
+    font-family: var(--font-inter);
+    font-size: 12px;
+    font-weight: var(--font-inter-bold);
+
+    cursor: pointer;
+
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.codeBlock:hover .copyButton {
+    opacity: 1;
+}
+
+.copyButton:hover {
+    background-color: var(--color-element-hover);
+}
