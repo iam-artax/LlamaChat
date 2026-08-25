@@ -1,0 +1,22 @@
+:root {
+  --color-primary: #1A1A1A;
+  --color-secondary: #111111;
+
+  --color-element: #333333;
+  --color-element-hover: #282828;
+  --color-element-bg: #222222;
+
+  --color-text: #ffffff;
+  --color-text-muted: #e0e0e0;
+
+  --radius: 16px;
+
+  --font-inter: "Inter", sans-serif;
+  --font-inter-regular: 400;
+  --font-inter-bold: 700;
+}
+
+body {
+  font-family: var(--font-inter);
+  color: var(--color-text);
+}

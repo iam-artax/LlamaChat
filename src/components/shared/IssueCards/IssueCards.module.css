@@ -1,0 +1,8 @@
+.issueCard{
+    background-color: var(--color-element);
+    padding: 16px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border-radius: var(--radius);
+}

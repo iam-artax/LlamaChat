@@ -1,0 +1,27 @@
+.button {
+    background-color: var(--color-element);
+
+    font-weight: var(--font-inter-bold);
+
+    color: var(--color-text);
+
+    border-radius: var(--radius);
+
+    padding: 12px 20px;
+
+    cursor: pointer;
+
+    border: none;
+
+    display: flex;
+
+    gap: 6px;
+
+    justify-content: center;
+
+    align-items: center;
+}
+
+.button:hover {
+    background-color: var(--color-element-hover);
+}

@@ -1,0 +1,152 @@
+.message {
+    width: 100%;
+}
+
+.user {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.assistant {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.role {
+    margin-bottom: 8px;
+
+    font-size: 12px;
+    font-weight: var(--font-inter-bold);
+
+    color: var(--color-text-muted);
+}
+
+.content {
+    max-width: 800px;
+
+    line-height: 1.7;
+
+    font-size: 15px;
+}
+
+.user .content {
+    padding: 10px 14px;
+
+    border-radius: 12px;
+
+    background-color: var(--color-element);
+}
+
+.content p {
+    margin-bottom: 12px;
+}
+
+.content p:last-child {
+    margin-bottom: 0;
+}
+
+.content ul,
+.content ol {
+    margin: 10px 0;
+    padding-right: 20px;
+}
+
+.content blockquote {
+    margin: 12px 0;
+
+    padding-right: 14px;
+
+    border-right: 3px solid var(--color-element);
+}
+
+.content code {
+    padding: 2px 5px;
+
+    border-radius: 5px;
+
+    background-color: var(--color-element-bg);
+
+    font-family: monospace;
+}
+
+.content pre {
+    margin: 14px 0;
+
+    padding: 16px;
+
+    overflow-x: auto;
+
+    border-radius: 10px;
+
+    background-color: #0b0b0b;
+}
+
+.content pre code {
+    padding: 0;
+
+    background: transparent;
+}
+
+
+.message pre {
+    overflow-x: auto;
+    margin: 12px 0;
+    padding: 16px;
+    border-radius: var(--radius);
+    background-color: #0d0d0d;
+}
+
+.message code {
+    font-family: monospace;
+}
+
+.message :not(pre) > code {
+    background-color: var(--color-element-bg);
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+.message pre code {
+    background: transparent;
+    padding: 0;
+}
+
+.message p {
+    margin-bottom: 10px;
+}
+
+.message p:last-child {
+    margin-bottom: 0;
+}
+
+.message ul,
+.message ol {
+    margin: 10px 0;
+    padding-left: 24px;
+}
+
+.message li {
+    margin-bottom: 4px;
+}
+
+.message blockquote {
+    margin: 12px 0;
+    padding-left: 12px;
+    border-left: 3px solid var(--color-element);
+    color: var(--color-text-muted);
+}
+
+.message table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+}
+
+.message th,
+.message td {
+    padding: 8px 12px;
+    border: 1px solid var(--color-element);
+    text-align: left;
+}
