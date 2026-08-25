@@ -14,6 +14,38 @@ export function useChat(model: string) {
         string | null
     >(null);
 
+    async function loadChat(id: string) {
+        if (isLoading) {
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
+            const response = await fetch(
+                `/api/chat/${id}`,
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    "Failed to load chat",
+                );
+            }
+
+            const data = await response.json();
+
+            setMessages(data.messages ?? []);
+            setChatId(id);
+        } catch (error) {
+            console.error(
+                "Failed to load chat:",
+                error,
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     async function sendMessage(content: string) {
         const trimmedContent = content.trim();
 
@@ -177,8 +209,6 @@ export function useChat(model: string) {
         } catch (error) {
             console.error(error);
 
-            // Remove empty assistant message
-            // if the request failed.
             setMessages(
                 (currentMessages) =>
                     currentMessages.filter(
@@ -201,11 +231,12 @@ export function useChat(model: string) {
         setChatId(null);
     }
 
-  return {
-      messages,
-      isLoading,
-      chatId,
-      sendMessage,
-      newChat,
-  };
+    return {
+        messages,
+        isLoading,
+        chatId,
+        sendMessage,
+        newChat,
+        loadChat,
+    };
 }

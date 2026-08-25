@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import ButtonIcon from "@/components/shared/ButtonIcon/ButtonIcon";
 
@@ -9,56 +9,86 @@ import type { Chat } from "@/types/chat";
 import styles from "./Sidebar.module.css";
 
 type SidebarProps = {
+    chats: Chat[];
     databaseAvailable: boolean;
+    activeChatId: string | null;
     onNewChat: () => void;
     onSettings: () => void;
+    onSelectChat: (chatId: string) => void;
+    onRenameChat: (
+        chatId: string,
+        title: string,
+    ) => Promise<boolean>;
+    onDeleteChat: (
+        chatId: string,
+    ) => Promise<boolean>;
 };
 
 export default function Sidebar({
+    chats,
     databaseAvailable,
+    activeChatId,
     onNewChat,
     onSettings,
+    onSelectChat,
+    onRenameChat,
+    onDeleteChat,
 }: SidebarProps) {
-    const [chats, setChats] = useState<Chat[]>([]);
-    const [isLoading, setIsLoading] =
+    const [openMenuId, setOpenMenuId] =
+        useState<string | null>(null);
+
+    const [editingChatId, setEditingChatId] =
+        useState<string | null>(null);
+
+    const [editingTitle, setEditingTitle] =
+        useState("");
+
+    const [isEditing, setIsEditing] =
         useState(false);
 
-    useEffect(() => {
-        if (!databaseAvailable) {
-            setChats([]);
+    function startRename(chat: Chat) {
+        setOpenMenuId(null);
+
+        setEditingChatId(chat.id);
+        setEditingTitle(chat.title);
+    }
+
+    function cancelRename() {
+        setEditingChatId(null);
+        setEditingTitle("");
+    }
+
+    async function handleRename(
+        chatId: string,
+    ) {
+        const title = editingTitle.trim();
+
+        if (!title || isEditing) {
             return;
         }
 
-        async function loadChats() {
-            try {
-                setIsLoading(true);
+        setIsEditing(true);
 
-                const response = await fetch(
-                    "/api/chats",
-                );
+        const success =
+            await onRenameChat(
+                chatId,
+                title,
+            );
 
-                if (!response.ok) {
-                    throw new Error(
-                        "Failed to load chats",
-                    );
-                }
+        setIsEditing(false);
 
-                const data =
-                    await response.json();
-
-                setChats(data.chats ?? []);
-            } catch (error) {
-                console.error(
-                    "Failed to load chats:",
-                    error,
-                );
-            } finally {
-                setIsLoading(false);
-            }
+        if (success) {
+            cancelRename();
         }
+    }
 
-        loadChats();
-    }, [databaseAvailable]);
+    async function handleDelete(
+        chatId: string,
+    ) {
+        setOpenMenuId(null);
+
+        await onDeleteChat(chatId);
+    }
 
     return (
         <aside className={styles.sidebar}>
@@ -77,14 +107,6 @@ export default function Sidebar({
                         <br />
                         Set it up in Settings.
                     </p>
-                ) : isLoading ? (
-                    <p
-                        className={
-                            styles.emptyMessage
-                        }
-                    >
-                        Loading chats...
-                    </p>
                 ) : chats.length === 0 ? (
                     <p
                         className={
@@ -94,21 +116,183 @@ export default function Sidebar({
                         No conversations yet.
                     </p>
                 ) : (
-                    chats.map((chat) => (
-                        <button
-                            key={chat.id}
-                            type="button"
-                            className={
-                                styles.chatItem
-                            }
-                        >
-                            <i className="bx bx-message-rounded" />
+                    chats.map((chat) => {
+                        const isEditingChat =
+                            editingChatId ===
+                            chat.id;
 
-                            <span>
-                                {chat.title}
-                            </span>
-                        </button>
-                    ))
+                        const isMenuOpen =
+                            openMenuId ===
+                            chat.id;
+
+                        return (
+                            <div
+                                key={chat.id}
+                                className={
+                                    styles.chatItemWrapper
+                                }
+                            >
+                                {isEditingChat ? (
+                                    <div
+                                        className={
+                                            styles.renameContainer
+                                        }
+                                    >
+                                        <input
+                                            value={
+                                                editingTitle
+                                            }
+                                            onChange={(
+                                                event,
+                                            ) =>
+                                                setEditingTitle(
+                                                    event
+                                                        .target
+                                                        .value,
+                                                )
+                                            }
+                                            onKeyDown={(
+                                                event,
+                                            ) => {
+                                                if (
+                                                    event.key ===
+                                                    "Enter"
+                                                ) {
+                                                    handleRename(
+                                                        chat.id,
+                                                    );
+                                                }
+
+                                                if (
+                                                    event.key ===
+                                                    "Escape"
+                                                ) {
+                                                    cancelRename();
+                                                }
+                                            }}
+                                            autoFocus
+                                            disabled={
+                                                isEditing
+                                            }
+                                        />
+
+                                        <button
+                                            type="button"
+                                            className={
+                                                styles.actionButton
+                                            }
+                                            onClick={() =>
+                                                handleRename(
+                                                    chat.id,
+                                                )
+                                            }
+                                            disabled={
+                                                isEditing
+                                            }
+                                        >
+                                            <i className="bx bx-check" />
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className={
+                                                styles.actionButton
+                                            }
+                                            onClick={
+                                                cancelRename
+                                            }
+                                            disabled={
+                                                isEditing
+                                            }
+                                        >
+                                            <i className="bx bx-x" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <button
+                                            type="button"
+                                            className={
+                                                styles.chatItem
+                                            }
+                                            onClick={() =>
+                                                onSelectChat(
+                                                    chat.id,
+                                                )
+                                            }
+                                        >
+                                            <i className="bx bx-message-rounded" />
+
+                                            <span>
+                                                {
+                                                    chat.title
+                                                }
+                                            </span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className={
+                                                styles.menuButton
+                                            }
+                                            onClick={(
+                                                event,
+                                            ) => {
+                                                event.stopPropagation();
+
+                                                setOpenMenuId(
+                                                    isMenuOpen
+                                                        ? null
+                                                        : chat.id,
+                                                );
+                                            }}
+                                        >
+                                            <i className="bx bx-dots-vertical-rounded" />
+                                        </button>
+
+                                        {isMenuOpen && (
+                                            <div
+                                                className={
+                                                    styles.chatMenu
+                                                }
+                                            >
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        startRename(
+                                                            chat,
+                                                        )
+                                                    }
+                                                >
+                                                    <i className="bx bx-edit" />
+                                                    <span>
+                                                        Rename
+                                                    </span>
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    className={
+                                                        styles.deleteAction
+                                                    }
+                                                    onClick={() =>
+                                                        handleDelete(
+                                                            chat.id,
+                                                        )
+                                                    }
+                                                >
+                                                    <i className="bx bx-trash" />
+                                                    <span>
+                                                        Delete
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        );
+                    })
                 )}
             </div>
 

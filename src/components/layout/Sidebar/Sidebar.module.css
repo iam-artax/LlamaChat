@@ -88,3 +88,173 @@
     flex: 1;
     height: 48px;
 }
+
+.chatItemWrapper {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+}
+
+.chatItemWrapper .chatItem {
+    flex: 1;
+
+    min-width: 0;
+
+    padding-left: 36px;
+}
+
+.menuButton {
+    position: absolute;
+
+    right: 6px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 28px;
+    height: 28px;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 7px;
+
+    background: transparent;
+    color: var(--color-text-muted);
+
+    cursor: pointer;
+
+    opacity: 0;
+
+    transition:
+        opacity 0.15s ease,
+        background-color 0.15s ease;
+}
+
+.chatItemWrapper:hover .menuButton {
+    opacity: 1;
+}
+
+.menuButton:hover {
+    background-color: var(--color-element-hover);
+    color: var(--color-text);
+}
+
+.chatMenu {
+    position: absolute;
+
+    top: calc(100% - 2px);
+    right: 6px;
+
+    z-index: 10;
+
+    min-width: 130px;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 5px;
+
+    border: 1px solid var(--color-element);
+    border-radius: 10px;
+
+    background-color: var(--color-secondary);
+
+    box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+}
+
+.chatMenu button {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    width: 100%;
+
+    padding: 8px 10px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: transparent;
+    color: var(--color-text);
+
+    font-family: inherit;
+    font-size: 13px;
+
+    text-align: right;
+
+    cursor: pointer;
+}
+
+.chatMenu button:hover {
+    background-color: var(--color-element-hover);
+}
+
+.chatMenu .deleteAction {
+    color: #ef4444;
+}
+
+.renameContainer {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 4px;
+}
+
+.renameContainer input {
+    min-width: 0;
+    flex: 1;
+
+    padding: 8px 9px;
+
+    border: 1px solid var(--color-element);
+    border-radius: 8px;
+
+    outline: none;
+
+    background-color: var(--color-element-bg);
+    color: var(--color-text);
+
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.renameContainer input:focus {
+    border-color: var(--color-text-muted);
+}
+
+.actionButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 30px;
+    height: 30px;
+
+    flex-shrink: 0;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 7px;
+
+    background-color: var(--color-element);
+
+    color: var(--color-text);
+
+    cursor: pointer;
+}
+
+.actionButton:hover {
+    background-color: var(--color-element-hover);
+}
+
+.actionButton:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
