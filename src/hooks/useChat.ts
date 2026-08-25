@@ -117,9 +117,14 @@ export function useChat(model: string) {
     }
   }
 
+  function newChat() {
+      setMessages([]);
+  }
+
   return {
     messages,
     isLoading,
     sendMessage,
+    newChat,
   };
 }

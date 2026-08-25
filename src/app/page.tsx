@@ -21,6 +21,7 @@ export default function Home() {
         messages,
         isLoading,
         sendMessage,
+        newChat,
     } = useChat(selectedModel);
 
     useEffect(() => {
@@ -48,17 +49,24 @@ export default function Home() {
     }, []);
 
     function handleNewChat() {
-        // فعلاً فقط ظاهری
-        console.log("New chat");
-    }
+        if (isLoading) {
+            return;
+        }
 
+        newChat();
+    }
+    
     function handleSettings() {
         // فعلاً فقط ظاهری
         console.log("Settings");
     }
-
+    
     return (
         <main className={styles.app}>
+            <Sidebar
+                onNewChat={handleNewChat}
+                onSettings={handleSettings}
+            />
             <div className={styles.content}>
             <Header
                 models={models}
@@ -74,10 +82,6 @@ export default function Home() {
                 />
             </div>
 
-            <Sidebar
-                onNewChat={handleNewChat}
-                onSettings={handleSettings}
-            />
         </main>
     );
 }
