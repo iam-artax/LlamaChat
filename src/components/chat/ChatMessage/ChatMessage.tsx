@@ -24,17 +24,19 @@ export default function ChatMessage({ message }: ChatMessageProps) {
         message.role === "user" ? styles.user : styles.assistant
       }`}
     >
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
-        components={{
-          pre({ children }) {
-            return <CodeBlock>{children}</CodeBlock>;
-          },
-        }}
-      >
-        {message.content}
-      </ReactMarkdown>
+      <div className={styles.content}>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeHighlight]}
+          components={{
+            pre({ children }) {
+              return <CodeBlock>{children}</CodeBlock>;
+            },
+          }}
+        >
+          {message.content}
+        </ReactMarkdown>
+      </div>
     </div>
   );
 }
