@@ -13,14 +13,15 @@ type ChatInputProps = {
 
 export default function ChatInput({
     onSend,
-    disabled = false,
+    disabled,
 }: ChatInputProps) {
+    const isDisabled = disabled === true;
     const [value, setValue] = useState("");
 
     function handleSubmit() {
         const message = value.trim();
 
-        if (!message || disabled) {
+        if (!message || isDisabled) {
             return;
         }
 
@@ -48,14 +49,14 @@ export default function ChatInput({
                     }
                     onKeyDown={handleKeyDown}
                     placeholder="Message..."
-                    disabled={disabled}
+                    disabled={isDisabled}
                     rows={1}
                 />
 
                 <ButtonIcon
                     iconName="bx-send"
                     onClick={handleSubmit}
-                    disabled={disabled || !value.trim()}
+                    disabled={isDisabled || !value.trim()}
                 />
             </div>
         </div>

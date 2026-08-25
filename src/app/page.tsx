@@ -60,20 +60,17 @@ export default function Home() {
     return (
         <main className={styles.app}>
             <div className={styles.content}>
-                <Header
-                    models={models}
-                    selectedModel={selectedModel}
-                    onModelChange={setSelectedModel}
-                    disabled={isLoading}
-                />
+            <Header
+                models={models}
+                selectedModel={selectedModel}
+                onModelChange={setSelectedModel}
+                disabled={Boolean(isLoading)}
+            />
 
                 <ChatWindow messages={messages} />
-
                 <ChatInput
                     onSend={sendMessage}
-                    disabled={
-                        isLoading || !selectedModel
-                    }
+                    disabled={Boolean(isLoading || !selectedModel)}
                 />
             </div>
 
