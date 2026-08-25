@@ -8,6 +8,7 @@ import Header from "@/components/layout/Header/Header";
 import Sidebar from "@/components/layout/Sidebar/Sidebar";
 
 import { useChat } from "@/hooks/useChat";
+import { useChats } from "@/hooks/useChats";
 
 import type { OllamaModel } from "@/types/ollama";
 
@@ -23,6 +24,11 @@ export default function Home() {
         sendMessage,
         newChat,
     } = useChat(selectedModel);
+
+    const {
+        chats,
+        databaseAvailable,
+    } = useChats();
 
     useEffect(() => {
         async function loadModels() {
@@ -63,10 +69,11 @@ export default function Home() {
     
     return (
         <main className={styles.app}>
-            <Sidebar
-                onNewChat={handleNewChat}
-                onSettings={handleSettings}
-            />
+        <Sidebar
+            databaseAvailable={databaseAvailable}
+            onNewChat={handleNewChat}
+            onSettings={handleSettings}
+        />
             <div className={styles.content}>
             <Header
                 models={models}
