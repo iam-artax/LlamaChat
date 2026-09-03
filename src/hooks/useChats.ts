@@ -56,49 +56,49 @@ export function useChats() {
         loadChats();
     }, []);
 
-async function renameChat(
-    chatId: string,
-    title: string,
-): Promise<boolean> {
-    const trimmedTitle = title.trim();
+    async function renameChat(
+        chatId: string,
+        title: string,
+    ): Promise<boolean> {
+        const trimmedTitle = title.trim();
 
-    if (!trimmedTitle) {
-        return false;
-    }
-
-    try {
-        const response = await fetch(
-            `/api/chat/${encodeURIComponent(chatId)}`,
-            {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    title: trimmedTitle,
-                }),
-            },
-        );
-
-        if (!response.ok) {
-            throw new Error(
-                "Failed to rename chat",
-            );
+        if (!trimmedTitle) {
+            return false;
         }
 
-        // بعد از تغییر موفق، لیست را از DB دوباره بگیر
-        await loadChats();
+        try {
+            const response = await fetch(
+                `/api/chat/${encodeURIComponent(chatId)}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                    },
+                    body: JSON.stringify({
+                        title: trimmedTitle,
+                    }),
+                },
+            );
 
-        return true;
-    } catch (error) {
-        console.error(
-            "Failed to rename chat:",
-            error,
-        );
+            if (!response.ok) {
+                throw new Error(
+                    "Failed to rename chat",
+                );
+            }
 
-        return false;
+            await loadChats();
+
+            return true;
+        } catch (error) {
+            console.error(
+                "Failed to rename chat:",
+                error,
+            );
+
+            return false;
+        }
     }
-}
 
     async function deleteChat(
         chatId: string,

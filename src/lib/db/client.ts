@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { Surreal } from "surrealdb";
 import { createNodeEngines } from "@surrealdb/node";
 
@@ -7,13 +9,9 @@ const db = new Surreal({
     },
 });
 
-let initialized = false;
+let initializationPromise: Promise<Surreal> | null = null;
 
-export async function getDatabase() {
-    if (initialized) {
-        return db;
-    }
-
+async function initializeDatabase() {
     await db.connect("surrealkv://./data");
 
     await db.use({
@@ -21,7 +19,26 @@ export async function getDatabase() {
         database: "llama_chat",
     });
 
-    initialized = true;
+    const schemaPath = path.join(
+        process.cwd(),
+        "database",
+        "schema.surql",
+    );
+
+    const schema = await readFile(schemaPath, "utf8");
+
+    await db.query(schema);
 
     return db;
+}
+
+export async function getDatabase() {
+    if (!initializationPromise) {
+        initializationPromise = initializeDatabase().catch((error) => {
+            initializationPromise = null;
+            throw error;
+        });
+    }
+
+    return initializationPromise;
 }

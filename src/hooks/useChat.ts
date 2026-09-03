@@ -226,9 +226,9 @@ export function useChat(model: string) {
         }
     }
 
-    function newChat() {
+    function newChat(id: string | null = null) {
         setMessages([]);
-        setChatId(null);
+        setChatId(id);
     }
 
     return {
