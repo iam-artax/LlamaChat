@@ -1,45 +1,27 @@
 import { Surreal } from "surrealdb";
+import { createNodeEngines } from "@surrealdb/node";
 
-const db = new Surreal();
+const db = new Surreal({
+    engines: {
+        ...createNodeEngines(),
+    },
+});
 
-let connected = false;
+let initialized = false;
 
 export async function getDatabase() {
-    if (connected) {
+    if (initialized) {
         return db;
     }
 
-    const url = process.env.SURREALDB_URL;
-    const namespace = process.env.SURREALDB_NAMESPACE;
-    const database = process.env.SURREALDB_DATABASE;
-    const username = process.env.SURREALDB_USERNAME;
-    const password = process.env.SURREALDB_PASSWORD;
-
-    if (
-        !url ||
-        !namespace ||
-        !database ||
-        !username ||
-        !password
-    ) {
-        throw new Error(
-            "SurrealDB environment variables are not configured.",
-        );
-    }
-
-    await db.connect(url);
-
-    await db.signin({
-        username,
-        password,
-    });
+    await db.connect("surrealkv://./data");
 
     await db.use({
-        namespace,
-        database,
+        namespace: "llama_chat",
+        database: "llama_chat",
     });
 
-    connected = true;
+    initialized = true;
 
     return db;
 }
