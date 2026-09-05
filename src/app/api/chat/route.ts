@@ -39,6 +39,31 @@ function isValidContextLength(
     );
 }
 
+function getOllamaConnectionError(
+    error: unknown,
+): string {
+    if (
+        error instanceof TypeError &&
+        error.cause &&
+        typeof error.cause === "object" &&
+        "code" in error.cause
+    ) {
+        const code = String(
+            error.cause.code,
+        );
+
+        if (
+            code === "ECONNREFUSED" ||
+            code === "ECONNRESET" ||
+            code === "ENOTFOUND"
+        ) {
+            return "Unable to connect to Ollama. Check that Ollama is running and the configured port is correct.";
+        }
+    }
+
+    return "Something went wrong while connecting to Ollama.";
+}
+
 export async function POST(request: Request) {
     try {
         const body = await request.json();
@@ -76,6 +101,7 @@ export async function POST(request: Request) {
                 {
                     success: false,
                     error: "Model is required",
+                    code: "INVALID_MODEL",
                 },
                 {
                     status: 400,
@@ -88,6 +114,7 @@ export async function POST(request: Request) {
                 {
                     success: false,
                     error: "Messages are required",
+                    code: "INVALID_MESSAGES",
                 },
                 {
                     status: 400,
@@ -110,6 +137,7 @@ export async function POST(request: Request) {
                     success: false,
                     error:
                         "A valid user message is required",
+                    code: "INVALID_USER_MESSAGE",
                 },
                 {
                     status: 400,
@@ -155,24 +183,46 @@ export async function POST(request: Request) {
             userContent,
         );
 
-        const ollamaResponse = await fetch(
-            `http://localhost:${ollamaPort}/api/chat`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type":
-                        "application/json",
-                },
-                body: JSON.stringify({
-                    model,
-                    messages,
-                    stream: true,
-                    options: {
-                        num_ctx: contextLength,
+        let ollamaResponse: Response;
+
+        try {
+            ollamaResponse = await fetch(
+                `http://localhost:${ollamaPort}/api/chat`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
                     },
-                }),
-            },
-        );
+                    body: JSON.stringify({
+                        model,
+                        messages,
+                        stream: true,
+                        options: {
+                            num_ctx: contextLength,
+                        },
+                    }),
+                },
+            );
+        } catch (error) {
+            console.error(
+                "Failed to connect to Ollama:",
+                error,
+            );
+
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: getOllamaConnectionError(
+                        error,
+                    ),
+                    code: "OLLAMA_CONNECTION_ERROR",
+                },
+                {
+                    status: 503,
+                },
+            );
+        }
 
         if (!ollamaResponse.ok) {
             const errorText =
@@ -180,14 +230,40 @@ export async function POST(request: Request) {
 
             console.error(
                 "Ollama request failed:",
-                errorText,
+                {
+                    status: ollamaResponse.status,
+                    error: errorText,
+                },
             );
+
+            const normalizedError =
+                errorText.toLowerCase();
+
+            if (
+                ollamaResponse.status === 404 &&
+                normalizedError.includes(
+                    "model",
+                )
+            ) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        error:
+                            "The selected model was not found in Ollama.",
+                        code: "OLLAMA_MODEL_NOT_FOUND",
+                    },
+                    {
+                        status: 404,
+                    },
+                );
+            }
 
             return NextResponse.json(
                 {
                     success: false,
                     error:
-                        "Ollama request failed",
+                        "Ollama returned an error. Please try again.",
+                    code: "OLLAMA_HTTP_ERROR",
                 },
                 {
                     status: ollamaResponse.status,
@@ -200,10 +276,11 @@ export async function POST(request: Request) {
                 {
                     success: false,
                     error:
-                        "Ollama response body is empty",
+                        "Ollama returned an empty response.",
+                    code: "OLLAMA_EMPTY_RESPONSE",
                 },
                 {
-                    status: 500,
+                    status: 502,
                 },
             );
         }
@@ -335,7 +412,8 @@ export async function POST(request: Request) {
             {
                 success: false,
                 error:
-                    "Failed to process chat",
+                    "Something went wrong while processing the chat.",
+                code: "CHAT_ERROR",
             },
             {
                 status: 500,

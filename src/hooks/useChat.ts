@@ -8,6 +8,12 @@ import {
 
 import type { Message } from "@/types/chat";
 
+type ChatErrorResponse = {
+    success?: boolean;
+    error?: string;
+    code?: string;
+};
+
 export function useChat(model: string) {
     const [messages, setMessages] = useState<
         Message[]
@@ -20,11 +26,16 @@ export function useChat(model: string) {
         string | null
     >(null);
 
+    const [error, setError] = useState<
+        string | null
+    >(null);
+
     async function loadChat(id: string) {
         if (isLoading) {
             return;
         }
 
+        setError(null);
         setIsLoading(true);
 
         try {
@@ -47,6 +58,10 @@ export function useChat(model: string) {
                 "Failed to load chat:",
                 error,
             );
+
+            setError(
+                "Unable to load this conversation.",
+            );
         } finally {
             setIsLoading(false);
         }
@@ -58,6 +73,8 @@ export function useChat(model: string) {
         if (!trimmedContent || isLoading) {
             return;
         }
+
+        setError(null);
 
         const settings = loadSettings();
 
@@ -111,14 +128,25 @@ export function useChat(model: string) {
             );
 
             if (!response.ok) {
+                let errorData:
+                    ChatErrorResponse = {};
+
+                try {
+                    errorData =
+                        await response.json();
+                } catch {
+                    // Ignore invalid error responses.
+                }
+
                 throw new Error(
-                    "Failed to send message",
+                    errorData.error ||
+                        "Something went wrong while communicating with Ollama.",
                 );
             }
 
             if (!response.body) {
                 throw new Error(
-                    "Response body is empty",
+                    "Ollama returned an empty response.",
                 );
             }
 
@@ -219,7 +247,17 @@ export function useChat(model: string) {
                 }
             }
         } catch (error) {
-            console.error(error);
+            console.error(
+                "Failed to send message:",
+                error,
+            );
+
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Something went wrong while communicating with Ollama.";
+
+            setError(message);
 
             setMessages(
                 (currentMessages) =>
@@ -238,15 +276,19 @@ export function useChat(model: string) {
         }
     }
 
-    function newChat(id: string | null = null) {
+    function newChat(
+        id: string | null = null,
+    ) {
         setMessages([]);
         setChatId(id);
+        setError(null);
     }
 
     return {
         messages,
         isLoading,
         chatId,
+        error,
         sendMessage,
         newChat,
         loadChat,
