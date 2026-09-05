@@ -17,7 +17,7 @@ export type AppSettings = {
 
 export const DEFAULT_SETTINGS: AppSettings = {
     ollamaPort: 11434,
-    contextLength: 32768,
+    contextLength: 4096,
     theme: "dark",
 };
 

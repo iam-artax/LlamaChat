@@ -37,6 +37,7 @@ export default function Home() {
         messages,
         isLoading,
         chatId,
+        error,
         sendMessage,
         newChat,
         loadChat,
@@ -194,6 +195,7 @@ export default function Home() {
 
                 <ChatWindow
                     messages={messages}
+                    error={error}
                 />
 
                 <ChatInput

@@ -2,6 +2,67 @@ import { NextResponse } from "next/server";
 
 import { createChat } from "@/lib/db/chat";
 import { createMessage } from "@/lib/db/message";
+import {
+    DEFAULT_SETTINGS,
+    type ContextLength,
+} from "@/lib/settings";
+
+const CONTEXT_LENGTHS: ContextLength[] = [
+    2048,
+    4096,
+    8192,
+    16384,
+    32768,
+    65536,
+    131072,
+];
+
+function isValidPort(
+    value: unknown,
+): value is number {
+    return (
+        typeof value === "number" &&
+        Number.isInteger(value) &&
+        value >= 1 &&
+        value <= 65535
+    );
+}
+
+function isValidContextLength(
+    value: unknown,
+): value is ContextLength {
+    return (
+        typeof value === "number" &&
+        CONTEXT_LENGTHS.includes(
+            value as ContextLength,
+        )
+    );
+}
+
+function getOllamaConnectionError(
+    error: unknown,
+): string {
+    if (
+        error instanceof TypeError &&
+        error.cause &&
+        typeof error.cause === "object" &&
+        "code" in error.cause
+    ) {
+        const code = String(
+            error.cause.code,
+        );
+
+        if (
+            code === "ECONNREFUSED" ||
+            code === "ECONNRESET" ||
+            code === "ENOTFOUND"
+        ) {
+            return "Unable to connect to Ollama. Check that Ollama is running and the configured port is correct.";
+        }
+    }
+
+    return "Something went wrong while connecting to Ollama.";
+}
 
 export async function POST(request: Request) {
     try {
@@ -18,6 +79,19 @@ export async function POST(request: Request) {
                 ? body.model.trim()
                 : "";
 
+        const ollamaPort = isValidPort(
+            body.ollamaPort,
+        )
+            ? body.ollamaPort
+            : DEFAULT_SETTINGS.ollamaPort;
+
+        const contextLength =
+            isValidContextLength(
+                body.contextLength,
+            )
+                ? body.contextLength
+                : DEFAULT_SETTINGS.contextLength;
+
         const messages = Array.isArray(body.messages)
             ? body.messages
             : [];
@@ -27,6 +101,7 @@ export async function POST(request: Request) {
                 {
                     success: false,
                     error: "Model is required",
+                    code: "INVALID_MODEL",
                 },
                 {
                     status: 400,
@@ -39,6 +114,7 @@ export async function POST(request: Request) {
                 {
                     success: false,
                     error: "Messages are required",
+                    code: "INVALID_MESSAGES",
                 },
                 {
                     status: 400,
@@ -46,18 +122,22 @@ export async function POST(request: Request) {
             );
         }
 
-        const lastMessage = messages[messages.length - 1];
+        const lastMessage =
+            messages[messages.length - 1];
 
         if (
             !lastMessage ||
             lastMessage.role !== "user" ||
-            typeof lastMessage.content !== "string" ||
+            typeof lastMessage.content !==
+                "string" ||
             !lastMessage.content.trim()
         ) {
             return NextResponse.json(
                 {
                     success: false,
-                    error: "A valid user message is required",
+                    error:
+                        "A valid user message is required",
+                    code: "INVALID_USER_MESSAGE",
                 },
                 {
                     status: 400,
@@ -65,22 +145,25 @@ export async function POST(request: Request) {
             );
         }
 
-        const userContent = lastMessage.content.trim();
+        const userContent =
+            lastMessage.content.trim();
 
         let currentChatId = chatId;
 
         // Create a chat only when the first message is sent.
         if (!currentChatId) {
-            const title = userContent.slice(0, 10);
+            const title =
+                userContent.slice(0, 10);
 
             const chat = await createChat(
                 title,
                 model,
             );
 
-            const createdChat = Array.isArray(chat)
-                ? chat[0]
-                : chat;
+            const createdChat =
+                Array.isArray(chat)
+                    ? chat[0]
+                    : chat;
 
             if (!createdChat?.id) {
                 throw new Error(
@@ -100,20 +183,46 @@ export async function POST(request: Request) {
             userContent,
         );
 
-        const ollamaResponse = await fetch(
-            "http://localhost:11434/api/chat",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
+        let ollamaResponse: Response;
+
+        try {
+            ollamaResponse = await fetch(
+                `http://localhost:${ollamaPort}/api/chat`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                    },
+                    body: JSON.stringify({
+                        model,
+                        messages,
+                        stream: true,
+                        options: {
+                            num_ctx: contextLength,
+                        },
+                    }),
                 },
-                body: JSON.stringify({
-                    model,
-                    messages,
-                    stream: true,
-                }),
-            },
-        );
+            );
+        } catch (error) {
+            console.error(
+                "Failed to connect to Ollama:",
+                error,
+            );
+
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: getOllamaConnectionError(
+                        error,
+                    ),
+                    code: "OLLAMA_CONNECTION_ERROR",
+                },
+                {
+                    status: 503,
+                },
+            );
+        }
 
         if (!ollamaResponse.ok) {
             const errorText =
@@ -121,13 +230,40 @@ export async function POST(request: Request) {
 
             console.error(
                 "Ollama request failed:",
-                errorText,
+                {
+                    status: ollamaResponse.status,
+                    error: errorText,
+                },
             );
+
+            const normalizedError =
+                errorText.toLowerCase();
+
+            if (
+                ollamaResponse.status === 404 &&
+                normalizedError.includes(
+                    "model",
+                )
+            ) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        error:
+                            "The selected model was not found in Ollama.",
+                        code: "OLLAMA_MODEL_NOT_FOUND",
+                    },
+                    {
+                        status: 404,
+                    },
+                );
+            }
 
             return NextResponse.json(
                 {
                     success: false,
-                    error: "Ollama request failed",
+                    error:
+                        "Ollama returned an error. Please try again.",
+                    code: "OLLAMA_HTTP_ERROR",
                 },
                 {
                     status: ollamaResponse.status,
@@ -140,10 +276,11 @@ export async function POST(request: Request) {
                 {
                     success: false,
                     error:
-                        "Ollama response body is empty",
+                        "Ollama returned an empty response.",
+                    code: "OLLAMA_EMPTY_RESPONSE",
                 },
                 {
-                    status: 500,
+                    status: 502,
                 },
             );
         }
@@ -194,7 +331,9 @@ export async function POST(request: Request) {
                             lines.pop() ?? "";
 
                         for (const line of lines) {
-                            if (!line.trim()) {
+                            if (
+                                !line.trim()
+                            ) {
                                 continue;
                             }
 
@@ -258,7 +397,8 @@ export async function POST(request: Request) {
             headers: {
                 "Content-Type":
                     "application/x-ndjson",
-                "Cache-Control": "no-cache",
+                "Cache-Control":
+                    "no-cache",
                 Connection: "keep-alive",
             },
         });
@@ -271,7 +411,9 @@ export async function POST(request: Request) {
         return NextResponse.json(
             {
                 success: false,
-                error: "Failed to process chat",
+                error:
+                    "Something went wrong while processing the chat.",
+                code: "CHAT_ERROR",
             },
             {
                 status: 500,
