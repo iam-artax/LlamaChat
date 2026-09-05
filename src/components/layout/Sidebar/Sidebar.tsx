@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import ButtonIcon from "@/components/shared/ButtonIcon/ButtonIcon";
 
@@ -34,6 +34,9 @@ export default function Sidebar({
     onRenameChat,
     onDeleteChat,
 }: SidebarProps) {
+    const sidebarRef =
+        useRef<HTMLElement>(null);
+
     const [openMenuId, setOpenMenuId] =
         useState<string | null>(null);
 
@@ -45,6 +48,38 @@ export default function Sidebar({
 
     const [isEditing, setIsEditing] =
         useState(false);
+
+    useEffect(() => {
+        function handleClickOutside(
+            event: MouseEvent,
+        ) {
+            const target = event.target;
+
+            if (!(target instanceof Node)) {
+                return;
+            }
+
+            if (
+                !sidebarRef.current?.contains(
+                    target,
+                )
+            ) {
+                setOpenMenuId(null);
+            }
+        }
+
+        document.addEventListener(
+            "mousedown",
+            handleClickOutside,
+        );
+
+        return () => {
+            document.removeEventListener(
+                "mousedown",
+                handleClickOutside,
+            );
+        };
+    }, []);
 
     function startRename(chat: Chat) {
         setOpenMenuId(null);
@@ -90,10 +125,28 @@ export default function Sidebar({
         await onDeleteChat(chatId);
     }
 
+    function handleNewChat() {
+        setOpenMenuId(null);
+        onNewChat();
+    }
+
+    function handleSettings() {
+        setOpenMenuId(null);
+        onSettings();
+    }
+
     return (
-        <aside className={styles.sidebar}>
+        <aside
+            ref={sidebarRef}
+            className={styles.sidebar}
+        >
             <div className={styles.header}>
-                <h1>Ollama Chat</h1>
+                <img
+                    src="/logo.webp"
+                    alt="Llama Chat"
+                />
+
+                <h1>Llama Chat</h1>
             </div>
 
             <div className={styles.chatList}>
@@ -158,6 +211,8 @@ export default function Sidebar({
                                                     event.key ===
                                                     "Enter"
                                                 ) {
+                                                    event.preventDefault();
+
                                                     handleRename(
                                                         chat.id,
                                                     );
@@ -212,14 +267,21 @@ export default function Sidebar({
                                     <>
                                         <button
                                             type="button"
-                                            className={
-                                                styles.chatItem
-                                            }
-                                            onClick={() =>
+                                            className={`${styles.chatItem} ${
+                                                activeChatId ===
+                                                chat.id
+                                                    ? styles.activeChatItem
+                                                    : ""
+                                            }`}
+                                            onClick={() => {
+                                                setOpenMenuId(
+                                                    null,
+                                                );
+
                                                 onSelectChat(
                                                     chat.id,
-                                                )
-                                            }
+                                                );
+                                            }}
                                         >
                                             <i className="bx bx-message-rounded" />
 
@@ -265,6 +327,7 @@ export default function Sidebar({
                                                     }
                                                 >
                                                     <i className="bx bx-edit" />
+
                                                     <span>
                                                         Rename
                                                     </span>
@@ -282,6 +345,7 @@ export default function Sidebar({
                                                     }
                                                 >
                                                     <i className="bx bx-trash" />
+
                                                     <span>
                                                         Delete
                                                     </span>
@@ -299,13 +363,13 @@ export default function Sidebar({
             <div className={styles.footer}>
                 <ButtonIcon
                     iconName="bx-cog"
-                    onClick={onSettings}
+                    onClick={handleSettings}
                 />
 
                 <ButtonIcon
                     iconName="bx-plus"
                     text="New Chat"
-                    onClick={onNewChat}
+                    onClick={handleNewChat}
                 />
             </div>
         </aside>

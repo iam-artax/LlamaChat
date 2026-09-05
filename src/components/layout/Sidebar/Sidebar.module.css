@@ -13,7 +13,23 @@
 }
 
 .header {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
     margin-bottom: 24px;
+}
+
+.header img {
+    width: 28px;
+    height: 28px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    object-fit: cover;
 }
 
 .header h1 {
@@ -67,6 +83,11 @@
 
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.activeChatItem {
+    background-color: var(--color-element-hover);
+    color: var(--color-text);
 }
 
 .footer {

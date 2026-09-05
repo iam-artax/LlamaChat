@@ -2,6 +2,8 @@
     width: 100%;
 
     padding: 16px 24px 20px;
+
+    cursor: text;
 }
 
 .inputWrapper {
@@ -27,9 +29,11 @@
     flex: 1;
 
     min-height: 44px;
-    max-height: 180px;
+    max-height: 127px;
 
     resize: none;
+
+    overflow-y: hidden;
 
     padding: 11px 8px;
 
@@ -48,6 +52,15 @@
 
 .inputWrapper textarea::placeholder {
     color: var(--color-text-muted);
+}
+
+.inputWrapper textarea::-webkit-scrollbar {
+    width: 6px;
+}
+
+.inputWrapper textarea::-webkit-scrollbar-thumb {
+    background-color: var(--color-element);
+    border-radius: 999px;
 }
 
 .inputWrapper button {
