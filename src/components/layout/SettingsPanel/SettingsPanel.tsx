@@ -6,6 +6,7 @@ import {
 } from "react";
 
 import {
+    applyTheme,
     loadSettings,
     saveSettings,
     type AppSettings,
@@ -115,6 +116,37 @@ export default function SettingsPanel({
         };
     }, [onClose]);
 
+    useEffect(() => {
+        const mediaQuery =
+            window.matchMedia(
+                "(prefers-color-scheme: dark)",
+            );
+
+        function handleSystemThemeChange() {
+            const currentSettings =
+                loadSettings();
+
+            if (
+                currentSettings.theme ===
+                "system"
+            ) {
+                applyTheme("system");
+            }
+        }
+
+        mediaQuery.addEventListener(
+            "change",
+            handleSystemThemeChange,
+        );
+
+        return () => {
+            mediaQuery.removeEventListener(
+                "change",
+                handleSystemThemeChange,
+            );
+        };
+    }, []);
+
     function handleOverlayClick(
         event: React.MouseEvent<HTMLDivElement>,
     ) {
@@ -156,8 +188,7 @@ export default function SettingsPanel({
             theme,
         );
 
-        document.documentElement.dataset.theme =
-            theme;
+        applyTheme(theme);
     }
 
     if (!settings) {
@@ -248,23 +279,6 @@ export default function SettingsPanel({
                                     styles.section
                                 }
                             >
-                                <div
-                                    className={
-                                        styles.sectionHeader
-                                    }
-                                >
-                                    <h4>
-                                        General
-                                    </h4>
-
-                                    <p>
-                                        Configure
-                                        connection
-                                        and model
-                                        settings.
-                                    </p>
-                                </div>
-
                                 <div
                                     className={
                                         styles.settingsList
@@ -403,22 +417,6 @@ export default function SettingsPanel({
                             >
                                 <div
                                     className={
-                                        styles.sectionHeader
-                                    }
-                                >
-                                    <h4>
-                                        Appearance
-                                    </h4>
-
-                                    <p>
-                                        Customize
-                                        how Llama
-                                        Chat looks.
-                                    </p>
-                                </div>
-
-                                <div
-                                    className={
                                         styles.settingsList
                                     }
                                 >
@@ -491,6 +489,27 @@ export default function SettingsPanel({
                                                     Light
                                                 </span>
                                             </button>
+
+                                            <button
+                                                type="button"
+                                                className={
+                                                    settings.theme ===
+                                                    "system"
+                                                        ? styles.selectedOption
+                                                        : styles.option
+                                                }
+                                                onClick={() =>
+                                                    handleThemeChange(
+                                                        "system",
+                                                    )
+                                                }
+                                            >
+                                                <i className="bx bx-desktop" />
+
+                                                <span>
+                                                    System
+                                                </span>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -501,7 +520,7 @@ export default function SettingsPanel({
                             "about" && (
                             <div
                                 className={
-                                    styles.section
+                                    styles.aboutSection
                                 }
                             >
                                 <div

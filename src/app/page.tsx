@@ -7,7 +7,7 @@ import ChatWindow from "@/components/chat/ChatWindow/ChatWindow";
 import Header from "@/components/layout/Header/Header";
 import SettingsPanel from "@/components/layout/SettingsPanel/SettingsPanel";
 import Sidebar from "@/components/layout/Sidebar/Sidebar";
-import { loadSettings } from "@/lib/settings";
+import {applyTheme,loadSettings,} from "@/lib/settings";
 import { useChat } from "@/hooks/useChat";
 import { useChats } from "@/hooks/useChats";
 
@@ -21,10 +21,38 @@ export default function Home() {
     >([]);
 
     useEffect(() => {
-        const settings = loadSettings();
+    const settings = loadSettings();
 
-        document.documentElement.dataset.theme =
-            settings.theme;
+        applyTheme(settings.theme);
+
+        const mediaQuery =
+            window.matchMedia(
+                "(prefers-color-scheme: dark)",
+            );
+
+        function handleSystemThemeChange() {
+            const currentSettings =
+                loadSettings();
+
+            if (
+                currentSettings.theme ===
+                "system"
+            ) {
+                applyTheme("system");
+            }
+        }
+
+        mediaQuery.addEventListener(
+            "change",
+            handleSystemThemeChange,
+        );
+
+        return () => {
+            mediaQuery.removeEventListener(
+                "change",
+                handleSystemThemeChange,
+            );
+        };
     }, []);
 
     const [selectedModel, setSelectedModel] =

@@ -1,4 +1,7 @@
-export type Theme = "dark" | "light";
+export type Theme =
+    | "dark"
+    | "light"
+    | "system";
 
 export type ContextLength =
     | 2048
@@ -21,7 +24,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
     theme: "dark",
 };
 
-const SETTINGS_STORAGE_KEY = "llama-chat-settings";
+const SETTINGS_STORAGE_KEY =
+    "llama-chat-settings";
 
 export function loadSettings(): AppSettings {
     if (typeof window === "undefined") {
@@ -75,4 +79,34 @@ export function updateSettings(
     saveSettings(settings);
 
     return settings;
+}
+
+export function getResolvedTheme(
+    theme: Theme,
+): "dark" | "light" {
+    if (theme !== "system") {
+        return theme;
+    }
+
+    if (
+        typeof window !== "undefined" &&
+        window.matchMedia(
+            "(prefers-color-scheme: dark)",
+        ).matches
+    ) {
+        return "dark";
+    }
+
+    return "light";
+}
+
+export function applyTheme(
+    theme: Theme,
+) {
+    if (typeof document === "undefined") {
+        return;
+    }
+
+    document.documentElement.dataset.theme =
+        getResolvedTheme(theme);
 }
