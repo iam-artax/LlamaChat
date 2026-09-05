@@ -5,8 +5,9 @@ import { useEffect, useState } from "react";
 import ChatInput from "@/components/chat/ChatInput/ChatInput";
 import ChatWindow from "@/components/chat/ChatWindow/ChatWindow";
 import Header from "@/components/layout/Header/Header";
+import SettingsPanel from "@/components/layout/SettingsPanel/SettingsPanel";
 import Sidebar from "@/components/layout/Sidebar/Sidebar";
-
+import { loadSettings } from "@/lib/settings";
 import { useChat } from "@/hooks/useChat";
 import { useChats } from "@/hooks/useChats";
 
@@ -19,8 +20,18 @@ export default function Home() {
         OllamaModel[]
     >([]);
 
+    useEffect(() => {
+        const settings = loadSettings();
+
+        document.documentElement.dataset.theme =
+            settings.theme;
+    }, []);
+
     const [selectedModel, setSelectedModel] =
         useState("");
+
+    const [isSettingsOpen, setIsSettingsOpen] =
+        useState(false);
 
     const {
         messages,
@@ -101,14 +112,6 @@ export default function Home() {
     ) {
         await sendMessage(content);
 
-        /*
-         * sendMessage خودش chat را در DB می‌سازد
-         * اگر این اولین پیام چت باشد.
-         *
-         * بعد از اتمام درخواست، Sidebar را
-         * دوباره از DB می‌خوانیم تا چت جدید
-         * بدون refresh نمایش داده شود.
-         */
         await loadChats();
     }
 
@@ -137,25 +140,21 @@ export default function Home() {
             return false;
         }
 
-        /*
-         * اگر چتی که حذف شد، چت فعال بود،
-         * صفحه چت را به حالت New Chat برمی‌گردانیم.
-         */
         if (chatId === selectedChatId) {
             newChat();
         }
 
-        /*
-         * Sidebar را بعد از Delete از DB
-         * دوباره می‌خوانیم.
-         */
         await loadChats();
 
         return true;
     }
 
     function handleSettings() {
-        console.log("Settings");
+        setIsSettingsOpen(true);
+    }
+
+    function handleCloseSettings() {
+        setIsSettingsOpen(false);
     }
 
     return (
@@ -206,6 +205,14 @@ export default function Home() {
                             !selectedModel,
                     )}
                 />
+
+                {isSettingsOpen && (
+                    <SettingsPanel
+                        onClose={
+                            handleCloseSettings
+                        }
+                    />
+                )}
             </div>
         </main>
     );
