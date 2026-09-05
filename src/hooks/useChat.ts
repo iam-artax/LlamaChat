@@ -1,4 +1,10 @@
+"use client";
+
 import { useState } from "react";
+
+import {
+    loadSettings,
+} from "@/lib/settings";
 
 import type { Message } from "@/types/chat";
 
@@ -53,6 +59,8 @@ export function useChat(model: string) {
             return;
         }
 
+        const settings = loadSettings();
+
         const userMessage: Message = {
             id: crypto.randomUUID(),
             role: "user",
@@ -78,6 +86,10 @@ export function useChat(model: string) {
                     body: JSON.stringify({
                         chatId,
                         model,
+                        ollamaPort:
+                            settings.ollamaPort,
+                        contextLength:
+                            settings.contextLength,
                         messages: [
                             ...messages.map(
                                 ({
