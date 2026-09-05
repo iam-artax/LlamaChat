@@ -110,6 +110,7 @@
 
 .content {
     min-width: 0;
+
     flex: 1;
 
     display: flex;
@@ -179,7 +180,8 @@
 }
 
 .section {
-    max-width: 720px;
+    width: 100%;
+    max-width: 760px;
 }
 
 .sectionHeader {
@@ -202,6 +204,213 @@
 
     font-size: 13px;
     line-height: 1.6;
+}
+
+.settingsList {
+    display: flex;
+    flex-direction: column;
+
+    border-top: 1px solid var(--color-element);
+}
+
+.setting {
+    min-height: 82px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 32px;
+
+    padding: 18px 0;
+
+    border-bottom: 1px solid var(--color-element);
+}
+
+.settingInfo {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.settingInfo label {
+    color: var(--color-text);
+
+    font-size: 14px;
+    font-weight: var(--font-inter-bold);
+}
+
+.settingInfo span {
+    color: var(--color-text-muted);
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.setting input,
+.setting select {
+    width: 150px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    padding: 0 10px;
+
+    border: 1px solid var(--color-element);
+    border-radius: 8px;
+
+    outline: none;
+
+    background-color: var(--color-element-bg);
+
+    color: var(--color-text);
+
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.setting input:focus,
+.setting select:focus {
+    border-color: var(--color-text-muted);
+}
+
+.themeOptions {
+    display: flex;
+
+    gap: 8px;
+}
+
+.option,
+.selectedOption {
+    min-width: 92px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    padding: 0 12px;
+
+    border: 1px solid var(--color-element);
+    border-radius: 8px;
+
+    background-color: var(--color-element-bg);
+
+    color: var(--color-text-muted);
+
+    font-family: inherit;
+    font-size: 13px;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.option:hover {
+    background-color: var(--color-element-hover);
+
+    color: var(--color-text);
+}
+
+.selectedOption {
+    border-color: var(--color-text-muted);
+
+    background-color: var(--color-element-hover);
+
+    color: var(--color-text);
+}
+
+.option i,
+.selectedOption i {
+    font-size: 17px;
+}
+
+.about {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    max-width: 420px;
+
+    padding-top: 40px;
+
+    text-align: center;
+}
+
+.aboutLogo {
+    width: 72px;
+    height: 72px;
+
+    margin-bottom: 18px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+}
+
+.about h4 {
+    margin-bottom: 7px;
+
+    color: var(--color-text);
+
+    font-size: 18px;
+    font-weight: var(--font-inter-bold);
+}
+
+.about p {
+    margin-bottom: 10px;
+
+    color: var(--color-text-muted);
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.version {
+    margin-bottom: 20px;
+
+    color: var(--color-text-muted);
+
+    font-size: 12px;
+}
+
+.githubLink {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 9px 14px;
+
+    border: 1px solid var(--color-element);
+    border-radius: 8px;
+
+    background-color: var(--color-element-bg);
+
+    color: var(--color-text);
+
+    font-size: 13px;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.githubLink:hover {
+    background-color: var(--color-element-hover);
+    border-color: var(--color-text-muted);
+}
+
+.githubLink i {
+    font-size: 17px;
 }
 
 @keyframes overlayIn {
@@ -239,6 +448,10 @@
 
     .header {
         padding: 0 20px;
+    }
+
+    .setting {
+        gap: 20px;
     }
 }
 
@@ -278,5 +491,24 @@
 
     .tab i {
         font-size: 20px;
+    }
+
+    .setting {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .setting input,
+    .setting select {
+        width: 100%;
+    }
+
+    .themeOptions {
+        width: 100%;
+    }
+
+    .option,
+    .selectedOption {
+        flex: 1;
     }
 }

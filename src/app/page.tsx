@@ -7,7 +7,7 @@ import ChatWindow from "@/components/chat/ChatWindow/ChatWindow";
 import Header from "@/components/layout/Header/Header";
 import SettingsPanel from "@/components/layout/SettingsPanel/SettingsPanel";
 import Sidebar from "@/components/layout/Sidebar/Sidebar";
-
+import { loadSettings } from "@/lib/settings";
 import { useChat } from "@/hooks/useChat";
 import { useChats } from "@/hooks/useChats";
 
@@ -19,6 +19,13 @@ export default function Home() {
     const [models, setModels] = useState<
         OllamaModel[]
     >([]);
+
+    useEffect(() => {
+        const settings = loadSettings();
+
+        document.documentElement.dataset.theme =
+            settings.theme;
+    }, []);
 
     const [selectedModel, setSelectedModel] =
         useState("");
